@@ -132,13 +132,13 @@ export default function AddProductPage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
+      <div className="mb-8 text-center">
         <Link href="/products">
           <Button variant="ghost" className="mb-4">
             ← Back to Products
           </Button>
         </Link>
-        <div className="flex items-center space-x-2 mb-4">
+        <div className="flex justify-center items-center space-x-2 mb-4">
           <Package className="h-8 w-8" />
           <h1 className="text-3xl font-bold">Add New Product</h1>
         </div>
@@ -149,7 +149,7 @@ export default function AddProductPage() {
 
       <div className="max-w-2xl mx-auto">
         <Card>
-          <CardHeader>
+          <CardHeader className="text-center">
             <CardTitle>Product Information</CardTitle>
             <CardDescription>
               Enter the basic information about your product

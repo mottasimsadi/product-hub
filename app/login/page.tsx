@@ -86,6 +86,7 @@ export default function LoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
+                  suppressHydrationWarning
                 />
               </div>
               <div className="space-y-2">
