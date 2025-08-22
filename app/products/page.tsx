@@ -1,39 +1,152 @@
-import { Footer } from "@/components/Footer";
-import { Navbar } from "@/components/Navbar";
-import { ProductCard } from "@/components/ProductCard";
-import { IProduct } from "@/lib/models";
+"use client";
 
-async function getProducts(): Promise<IProduct[]> {
-  const res = await fetch(`${process.env.NEXTAUTH_URL}/api/products`, {
-    cache: "no-store",
-  });
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Star, Search, Eye } from "lucide-react";
 
-  if (!res.ok) {
-    throw new Error("Failed to fetch products");
-  }
-  const body = await res.json();
-  return body.data;
+interface Product {
+  _id: string;
+  name: string;
+  description: string;
+  price: number;
+  category: string;
+  rating: number;
+  image?: string;
 }
 
-export default async function ProductsPage() {
-  const products = await getProducts();
+export default function ProductsPage() {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  useEffect(() => {
+    if (searchTerm === "") {
+      setFilteredProducts(products);
+    } else {
+      const filtered = products.filter(
+        (product) =>
+          product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          product.description
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
+          product.category.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      setFilteredProducts(filtered);
+    }
+  }, [searchTerm, products]);
+
+  const fetchProducts = async () => {
+    try {
+      const response = await fetch("/api/products");
+      if (response.ok) {
+        const data = await response.json();
+        setProducts(data);
+        setFilteredProducts(data);
+      }
+    } catch (error) {
+      console.error("Error fetching products:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <>
-      <Navbar />
-      <main className="container mx-auto py-8">
-        <h1 className="mb-8 text-4xl font-bold">All Products</h1>
-        {products.length > 0 ? (
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-            {products.map((product: IProduct) => (
-              <ProductCard key={product._id?.toString()} product={product} />
-            ))}
-          </div>
-        ) : (
-          <p>No products found. Add one from the dashboard!</p>
-        )}
-      </main>
-      <Footer />
-    </>
+    <div className="container mx-auto px-4 py-8">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold mb-4">Our Products</h1>
+        <p className="text-muted-foreground mb-6">
+          Discover our wide range of high-quality products
+        </p>
+
+        <div className="relative max-w-md">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+          <Input
+            type="text"
+            placeholder="Search products..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+      </div>
+
+      {filteredProducts.length === 0 ? (
+        <div className="text-center py-12">
+          <p className="text-muted-foreground">
+            No products found matching your search.
+          </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {filteredProducts.map((product) => (
+            <Card
+              key={product._id}
+              className="group hover:shadow-lg transition-shadow"
+            >
+              <div className="aspect-square bg-muted rounded-t-lg flex items-center justify-center">
+                <div className="text-muted-foreground">Product Image</div>
+              </div>
+              <CardHeader>
+                <div className="flex items-start justify-between">
+                  <CardTitle className="text-lg group-hover:text-primary transition-colors line-clamp-2">
+                    {product.name}
+                  </CardTitle>
+                  <Badge variant="secondary" className="text-xs">
+                    {product.category}
+                  </Badge>
+                </div>
+                <CardDescription className="line-clamp-2">
+                  {product.description}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center space-x-1">
+                    <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                    <span className="text-sm font-medium">
+                      {product.rating}
+                    </span>
+                  </div>
+                  <div className="text-xl font-bold text-primary">
+                    ${product.price.toFixed(2)}
+                  </div>
+                </div>
+                <Link href={`/products/${product._id}`}>
+                  <Button className="w-full">
+                    <Eye className="mr-2 h-4 w-4" />
+                    View Details
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
