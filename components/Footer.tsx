@@ -9,7 +9,7 @@ export default function Footer() {
           <div className="col-span-1 md:col-span-2">
             <div className="flex items-center space-x-2 mb-4">
               <ShoppingCart className="h-8 w-8" />
-              <span className="text-xl font-bold">ProductStore</span>
+              <span className="text-xl font-bold">ProductHub</span>
             </div>
             <p className="text-muted-foreground mb-4 max-w-md">
               Your one-stop destination for quality products and excellent
@@ -19,11 +19,11 @@ export default function Footer() {
             <div className="flex space-x-4">
               <div className="flex items-center space-x-2 text-sm text-muted-foreground">
                 <Mail className="h-4 w-4" />
-                <span>support@productstore.com</span>
+                <span>support@producthub.com</span>
               </div>
               <div className="flex items-center space-x-2 text-sm text-muted-foreground">
                 <Phone className="h-4 w-4" />
-                <span>+1 (555) 123-4567</span>
+                <span>+8801311223344</span>
               </div>
             </div>
           </div>

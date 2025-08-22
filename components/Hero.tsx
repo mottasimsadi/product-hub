@@ -9,7 +9,7 @@ export default function Hero() {
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-6">
             Welcome to
-            <span className="text-primary"> ProductStore</span>
+            <span className="text-primary"> ProductHub</span>
           </h1>
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
             Discover amazing products and manage your inventory with ease. Join

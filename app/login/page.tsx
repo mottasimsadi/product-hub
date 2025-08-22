@@ -70,8 +70,8 @@ export default function LoginPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Sign In</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-center">Sign In</CardTitle>
+            <CardDescription className="text-center">
               Enter your credentials to access your account
             </CardDescription>
           </CardHeader>

@@ -115,8 +115,8 @@ export default function SignupPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Sign Up</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-center">Sign Up</CardTitle>
+            <CardDescription className="text-center">
               Create a new account to get started
             </CardDescription>
           </CardHeader>

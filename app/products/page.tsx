@@ -13,6 +13,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Star, Search, Eye } from "lucide-react";
+import Image from "next/image";
 
 interface Product {
   _id: string;
@@ -77,13 +78,13 @@ export default function ProductsPage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
+      <div className="mb-8 text-center">
         <h1 className="text-3xl font-bold mb-4">Our Products</h1>
         <p className="text-muted-foreground mb-6">
           Discover our wide range of high-quality products
         </p>
 
-        <div className="relative max-w-md">
+        <div className="relative flex mx-auto max-w-md">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
           <Input
             type="text"
@@ -108,8 +109,14 @@ export default function ProductsPage() {
               key={product._id}
               className="group hover:shadow-lg transition-shadow"
             >
-              <div className="aspect-square bg-muted rounded-t-lg flex items-center justify-center">
-                <div className="text-muted-foreground">Product Image</div>
+              <div className="aspect-square bg-muted rounded-t-lg flex items-center justify-center relative">
+                <Image
+                  src={product.image || "/placeholder-image.jpg"}
+                  alt={product.name}
+                  fill
+                  className="object-cover group-hover:scale-105 transition-transform duration-300"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                />
               </div>
               <CardHeader>
                 <div className="flex items-start justify-between">

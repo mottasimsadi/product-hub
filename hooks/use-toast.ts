@@ -10,11 +10,10 @@ type ToasterToast = {
   title?: React.ReactNode;
   description?: React.ReactNode;
   action?: React.ReactNode;
-  open?: boolean; // Add this property
-  onOpenChange?: (open: boolean) => void; // Add this property
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 };
 
-// Fix: Remove unused actionTypes variable
 type ActionType = {
   ADD_TOAST: "ADD_TOAST";
   UPDATE_TOAST: "UPDATE_TOAST";
@@ -152,7 +151,6 @@ function toast({ ...props }: Toast) {
       id,
       open: true,
       onOpenChange: (open: boolean) => {
-        // Add proper type for open parameter
         if (!open) dismiss();
       },
     },

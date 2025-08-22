@@ -9,12 +9,22 @@ import { Moon, Sun, ShoppingCart, User } from "lucide-react";
 
 export default function Navbar() {
   const { data: session } = useSession();
-  const { theme, setTheme } = useTheme();
+  const { theme, setTheme, systemTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const [currentTheme, setCurrentTheme] = useState("light");
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Update currentTheme whenever theme or systemTheme changes
+  useEffect(() => {
+    if (theme === "system") {
+      setCurrentTheme(systemTheme || "light");
+    } else {
+      setCurrentTheme(theme || "light");
+    }
+  }, [theme, systemTheme]);
 
   if (!mounted) {
     return (
@@ -24,7 +34,7 @@ export default function Navbar() {
             <div className="flex items-center space-x-8">
               <Link href="/" className="flex items-center space-x-2">
                 <ShoppingCart className="h-8 w-8" />
-                <span className="text-xl font-bold">ProductStore</span>
+                <span className="text-xl font-bold">ProductHub</span>
               </Link>
             </div>
             <div className="flex items-center space-x-4">
@@ -38,6 +48,16 @@ export default function Navbar() {
     );
   }
 
+  const toggleTheme = () => {
+    if (theme === "system") {
+      // If current theme is system, toggle based on system theme
+      setTheme(systemTheme === "dark" ? "light" : "dark");
+    } else {
+      // If theme is explicitly set, toggle between light and dark
+      setTheme(theme === "dark" ? "light" : "dark");
+    }
+  };
+
   return (
     <nav className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -45,7 +65,7 @@ export default function Navbar() {
           <div className="flex items-center space-x-8">
             <Link href="/" className="flex items-center space-x-2">
               <ShoppingCart className="h-8 w-8" />
-              <span className="text-xl font-bold">ProductStore</span>
+              <span className="text-xl font-bold">ProductHub</span>
             </Link>
           </div>
 
@@ -69,13 +89,12 @@ export default function Navbar() {
           </div>
 
           <div className="flex items-center space-x-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-            >
-              <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-              <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+            <Button variant="ghost" size="icon" onClick={toggleTheme}>
+              {currentTheme === "dark" ? (
+                <Sun className="h-[1.2rem] w-[1.2rem]" />
+              ) : (
+                <Moon className="h-[1.2rem] w-[1.2rem]" />
+              )}
               <span className="sr-only">Toggle theme</span>
             </Button>
 
