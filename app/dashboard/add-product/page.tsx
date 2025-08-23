@@ -249,7 +249,7 @@ export default function AddProductPage() {
               <Separator />
 
               <div className="space-y-2">
-                <Label>Features *</Label>
+                <Label>Features</Label>
                 <div className="flex space-x-2">
                   <Input
                     placeholder="Add a feature"
@@ -258,7 +258,6 @@ export default function AddProductPage() {
                     onKeyPress={(e) =>
                       e.key === "Enter" && (e.preventDefault(), addFeature())
                     }
-                    required
                   />
                   <Button type="button" onClick={addFeature} variant="outline">
                     <Plus className="h-4 w-4" />
