@@ -70,4 +70,5 @@ export interface Product {
   createdAt: Date;
   updatedAt: Date;
   authorId: string;
+  isFeatured?: boolean;
 }

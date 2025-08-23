@@ -92,6 +92,19 @@ export default function AddProductPage() {
     e.preventDefault();
     setIsLoading(true);
 
+    // Add validation for required fields
+    if (
+      !formData.name ||
+      !formData.description ||
+      !formData.price ||
+      !formData.category ||
+      !formData.stock
+    ) {
+      toast.error("Please fill in all required fields");
+      setIsLoading(false);
+      return;
+    }
+
     try {
       const response = await fetch("/api/products", {
         method: "POST",
@@ -105,6 +118,7 @@ export default function AddProductPage() {
           category: formData.category,
           features: formData.features,
           stock: formData.stock,
+          authorId: session.user?.id, // Add the authorId from the session
         }),
       });
 
@@ -235,7 +249,7 @@ export default function AddProductPage() {
               <Separator />
 
               <div className="space-y-2">
-                <Label>Features</Label>
+                <Label>Features *</Label>
                 <div className="flex space-x-2">
                   <Input
                     placeholder="Add a feature"
@@ -244,6 +258,7 @@ export default function AddProductPage() {
                     onKeyPress={(e) =>
                       e.key === "Enter" && (e.preventDefault(), addFeature())
                     }
+                    required
                   />
                   <Button type="button" onClick={addFeature} variant="outline">
                     <Plus className="h-4 w-4" />

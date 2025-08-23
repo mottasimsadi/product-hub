@@ -1,9 +1,5 @@
 import { NextResponse } from "next/server";
-import {
-  getProductsCollection,
-  getUsersCollection,
-  Product,
-} from "@/lib/mongodb";
+import { getProductsCollection, getUsersCollection } from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
 
 export async function GET() {
@@ -19,16 +15,45 @@ export async function GET() {
     // Get author information for each product
     const productsWithAuthors = await Promise.all(
       products.map(async (product) => {
-        const author = await usersCollection.findOne(
-          { id: product.authorId },
-          { projection: { passwordHash: 0 } }
-        );
+        let author = null;
+
+        // Only try to find author if authorId exists and is a valid ObjectId
+        if (product.authorId) {
+          try {
+            // Check if authorId is a valid ObjectId
+            if (ObjectId.isValid(product.authorId)) {
+              author = await usersCollection.findOne(
+                { _id: new ObjectId(product.authorId) },
+                { projection: { passwordHash: 0 } }
+              );
+            } else {
+              // If not a valid ObjectId, try finding by other fields
+              author = await usersCollection.findOne(
+                {
+                  $or: [
+                    { id: product.authorId },
+                    { email: product.authorId },
+                    { name: product.authorId },
+                  ],
+                },
+                { projection: { passwordHash: 0 } }
+              );
+            }
+          } catch (error) {
+            console.error(
+              "Error finding author for product:",
+              product._id,
+              error
+            );
+          }
+        }
 
         return {
           ...product,
+          _id: product._id?.toString(),
           author: author
             ? {
-                id: author.id,
+                id: author._id?.toString(),
                 name: author.name,
                 email: author.email,
               }
@@ -53,17 +78,27 @@ export async function POST(request: Request) {
     const { name, description, price, category, features, stock, authorId } =
       body;
 
-    if (!name || !description || !price || !category || !authorId) {
+    // Add better validation
+    if (!name || !description || !price || !category) {
       return NextResponse.json(
-        { error: "Missing required fields" },
+        {
+          error:
+            "Missing required fields: name, description, price, or category",
+        },
         { status: 400 }
+      );
+    }
+
+    if (!authorId) {
+      return NextResponse.json(
+        { error: "User authentication required" },
+        { status: 401 }
       );
     }
 
     const productsCollection = await getProductsCollection();
 
-    const productData: Product = {
-      id: new ObjectId().toString(),
+    const productData = {
       name,
       description,
       price: parseFloat(price),
@@ -83,17 +118,33 @@ export async function POST(request: Request) {
 
     // Get the created product with author information
     const usersCollection = await getUsersCollection();
-    const author = await usersCollection.findOne(
-      { id: authorId },
-      { projection: { passwordHash: 0 } }
-    );
+    let author = null;
+
+    try {
+      // Check if authorId is a valid ObjectId
+      if (ObjectId.isValid(authorId)) {
+        author = await usersCollection.findOne(
+          { _id: new ObjectId(authorId) },
+          { projection: { passwordHash: 0 } }
+        );
+      } else {
+        // If not a valid ObjectId, try finding by other fields
+        author = await usersCollection.findOne(
+          { $or: [{ id: authorId }, { email: authorId }, { name: authorId }] },
+          { projection: { passwordHash: 0 } }
+        );
+      }
+    } catch (error) {
+      console.error("Error finding author:", error);
+    }
 
     const createdProduct = {
       ...productData,
       _id: result.insertedId,
+      id: result.insertedId.toString(),
       author: author
         ? {
-            id: author.id,
+            id: author._id?.toString(),
             name: author.name,
             email: author.email,
           }

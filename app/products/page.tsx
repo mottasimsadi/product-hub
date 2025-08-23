@@ -21,7 +21,7 @@ interface Product {
   description: string;
   price: number;
   category: string;
-  rating: number;
+  rating?: number;
   image?: string;
 }
 
@@ -30,6 +30,16 @@ export default function ProductsPage() {
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+
+  const generateRandomRating = () => {
+    return parseFloat((Math.random() * 1.5 + 3.5).toFixed(1));
+  };
+
+  const getProductRating = (product: Product) => {
+    return product.rating !== undefined
+      ? product.rating
+      : generateRandomRating();
+  };
 
   useEffect(() => {
     fetchProducts();
@@ -56,8 +66,17 @@ export default function ProductsPage() {
       const response = await fetch("/api/products");
       if (response.ok) {
         const data = await response.json();
-        setProducts(data);
-        setFilteredProducts(data);
+
+        const enhancedProducts = data.map((product: Product) => ({
+          ...product,
+          rating:
+            product.rating !== undefined
+              ? product.rating
+              : generateRandomRating(),
+        }));
+
+        setProducts(enhancedProducts);
+        setFilteredProducts(enhancedProducts);
       }
     } catch (error) {
       console.error("Error fetching products:", error);
@@ -104,54 +123,66 @@ export default function ProductsPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredProducts.map((product) => (
-            <Card
-              key={product._id}
-              className="group hover:shadow-lg transition-shadow"
-            >
-              <div className="aspect-square bg-muted rounded-t-lg flex items-center justify-center relative">
-                <Image
-                  src={product.image || "/placeholder-image.jpg"}
-                  alt={product.name}
-                  fill
-                  className="object-cover group-hover:scale-105 transition-transform duration-300"
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                />
-              </div>
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <CardTitle className="text-lg group-hover:text-primary transition-colors line-clamp-2">
-                    {product.name}
-                  </CardTitle>
-                  <Badge variant="secondary" className="text-xs">
-                    {product.category}
-                  </Badge>
+          {filteredProducts.map((product) => {
+            const productRating = getProductRating(product);
+
+            return (
+              <Card
+                key={product._id}
+                className="group hover:shadow-lg transition-shadow flex flex-col h-full"
+              >
+                <div className="aspect-video bg-muted rounded-t-lg overflow-hidden relative">
+                  <Image
+                    src={product.image || "/placeholder-image.jpg"}
+                    alt={product.name}
+                    fill
+                    className="object-cover group-hover:scale-105 transition-transform duration-300"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  />
                 </div>
-                <CardDescription className="line-clamp-2">
-                  {product.description}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center space-x-1">
-                    <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                    <span className="text-sm font-medium">
-                      {product.rating}
-                    </span>
+                <CardHeader className="pb-3 flex-shrink-0">
+                  <div className="flex items-start justify-between">
+                    <CardTitle className="text-lg group-hover:text-primary transition-colors line-clamp-2">
+                      {product.name}
+                    </CardTitle>
+                    <Badge
+                      variant="secondary"
+                      className="text-xs flex-shrink-0 ml-2"
+                    >
+                      {product.category}
+                    </Badge>
                   </div>
-                  <div className="text-xl font-bold text-primary">
-                    ${product.price.toFixed(2)}
+                  <CardDescription className="line-clamp-2 mt-2">
+                    {product.description}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="mt-auto pt-0">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center space-x-1">
+                      <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                      <span className="text-sm font-medium">
+                        {productRating}
+                      </span>
+                    </div>
+                    <div className="text-xl font-bold text-primary">
+                      ${product.price.toFixed(2)}
+                    </div>
                   </div>
-                </div>
-                <Link href={`/products/${product._id}`}>
-                  <Button className="w-full">
-                    <Eye className="mr-2 h-4 w-4" />
-                    View Details
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
-          ))}
+                  <Link
+                    href={{
+                      pathname: `/products/${product._id}`,
+                      query: { rating: productRating },
+                    }}
+                  >
+                    <Button className="w-full">
+                      <Eye className="mr-2 h-4 w-4" />
+                      View Details
+                    </Button>
+                  </Link>
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       )}
     </div>
