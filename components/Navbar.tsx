@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useSession, signOut } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "next-themes";
@@ -18,12 +18,13 @@ import {
   Plus,
 } from "lucide-react";
 import { toast } from "sonner";
-import { useIsMobile } from "@/hooks/use-mobile"; // Your custom hook
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export default function Navbar() {
   const { data: session, update } = useSession();
   const { theme, setTheme, systemTheme } = useTheme();
   const router = useRouter();
+  const pathname = usePathname();
   const isMobile = useIsMobile();
   const [mounted, setMounted] = useState(false);
   const [currentTheme, setCurrentTheme] = useState("light");
@@ -42,18 +43,10 @@ export default function Navbar() {
     }
   }, [theme, systemTheme]);
 
+  // Close menu when route changes
   useEffect(() => {
-    // Close menu when route changes
-    const handleRouteChange = () => {
-      setIsMenuOpen(false);
-    };
-
-    router.events?.on("routeChangeStart", handleRouteChange);
-
-    return () => {
-      router.events?.off("routeChangeStart", handleRouteChange);
-    };
-  }, [router]);
+    setIsMenuOpen(false);
+  }, [pathname]); // Close menu when pathname changes
 
   const handleSignOut = async () => {
     setIsSigningOut(true);
@@ -267,7 +260,7 @@ export default function Navbar() {
           {/* Overlay */}
           {isMenuOpen && (
             <div
-              className="fixed inset-0 bg-black/80 z-40 md:hidden"
+              className="fixed inset-0 bg-black/50 z-40 md:hidden"
               onClick={() => setIsMenuOpen(false)}
             />
           )}

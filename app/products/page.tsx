@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
@@ -31,19 +31,51 @@ export default function ProductsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(true);
 
-  const generateRandomRating = () => {
+  // Function to generate random rating between 3.5 and 5.0
+  const generateRandomRating = useCallback(() => {
     return parseFloat((Math.random() * 1.5 + 3.5).toFixed(1));
-  };
+  }, []);
 
-  const getProductRating = (product: Product) => {
-    return product.rating !== undefined
-      ? product.rating
-      : generateRandomRating();
-  };
+  // Function to get rating - use database rating if available, otherwise generate random
+  const getProductRating = useCallback(
+    (product: Product) => {
+      return product.rating !== undefined
+        ? product.rating
+        : generateRandomRating();
+    },
+    [generateRandomRating]
+  );
+
+  // Define fetchProducts with useCallback to prevent infinite re-renders
+  const fetchProducts = useCallback(async () => {
+    try {
+      const response = await fetch("/api/products");
+      if (response.ok) {
+        const data = await response.json();
+
+        // Enhance products with ratings (use existing or generate random)
+        const enhancedProducts = data.map((product: Product) => ({
+          ...product,
+          // Keep existing rating if available, otherwise generate random
+          rating:
+            product.rating !== undefined
+              ? product.rating
+              : generateRandomRating(),
+        }));
+
+        setProducts(enhancedProducts);
+        setFilteredProducts(enhancedProducts);
+      }
+    } catch (error) {
+      console.error("Error fetching products:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [generateRandomRating]);
 
   useEffect(() => {
     fetchProducts();
-  }, []);
+  }, [fetchProducts]);
 
   useEffect(() => {
     if (searchTerm === "") {
@@ -60,30 +92,6 @@ export default function ProductsPage() {
       setFilteredProducts(filtered);
     }
   }, [searchTerm, products]);
-
-  const fetchProducts = async () => {
-    try {
-      const response = await fetch("/api/products");
-      if (response.ok) {
-        const data = await response.json();
-
-        const enhancedProducts = data.map((product: Product) => ({
-          ...product,
-          rating:
-            product.rating !== undefined
-              ? product.rating
-              : generateRandomRating(),
-        }));
-
-        setProducts(enhancedProducts);
-        setFilteredProducts(enhancedProducts);
-      }
-    } catch (error) {
-      console.error("Error fetching products:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   if (isLoading) {
     return (
