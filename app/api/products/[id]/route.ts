@@ -4,10 +4,10 @@ import { ObjectId } from "mongodb";
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> } // params is now a Promise
 ) {
   try {
-    const { id } = params;
+    const { id } = await params; // Await the params promise
 
     const productsCollection = await getProductsCollection();
     const usersCollection = await getUsersCollection();

@@ -136,12 +136,12 @@ export default function ProductDetailPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div className="space-y-4">
-          <div className="aspect-square bg-muted rounded-lg overflow-hidden relative">
+          <div className="aspect-video bg-muted rounded-lg overflow-hidden relative">
             <Image
               src={product.image || "/placeholder-image.jpg"}
               alt={product.name}
               fill
-              className="object-contain group-hover:scale-105 transition-transform duration-300"
+              className="object-cover group-hover:scale-105 transition-transform duration-300"
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             />
           </div>
