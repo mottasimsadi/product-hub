@@ -1,12 +1,13 @@
 import { NextResponse } from "next/server";
-import { getUsersCollection, User } from "@/lib/mongodb";
+import { getUsersCollection } from "@/lib/mongodb";
 import bcrypt from "bcryptjs";
-import { ObjectId } from "mongodb";
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
     const { name, email, password } = body;
+
+    console.log("Registration attempt:", { name, email });
 
     if (!name || !email || !password) {
       return NextResponse.json(
@@ -26,6 +27,7 @@ export async function POST(request: Request) {
 
     // Check if user already exists
     const existingUser = await usersCollection.findOne({ email });
+    console.log("Existing user check:", existingUser);
 
     if (existingUser) {
       return NextResponse.json(
@@ -36,10 +38,10 @@ export async function POST(request: Request) {
 
     // Hash the password
     const hashedPassword = await bcrypt.hash(password, 12);
+    console.log("Password hashed successfully");
 
     // Create the user
-    const userData: User = {
-      id: new ObjectId().toString(),
+    const userData = {
       name,
       email,
       passwordHash: hashedPassword,
@@ -48,12 +50,17 @@ export async function POST(request: Request) {
     };
 
     const result = await usersCollection.insertOne(userData);
+    console.log("Insert result:", result);
+
+    if (!result.acknowledged) {
+      throw new Error("Failed to insert user");
+    }
 
     return NextResponse.json(
       {
         message: "User created successfully",
         user: {
-          id: userData.id,
+          id: result.insertedId.toString(),
           name: userData.name,
           email: userData.email,
         },

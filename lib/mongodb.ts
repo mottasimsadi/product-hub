@@ -1,10 +1,11 @@
-import { MongoClient, Db, Collection } from "mongodb";
+import { MongoClient, Db, Collection, ObjectId } from "mongodb";
 
 if (!process.env.MONGODB_URI) {
   throw new Error('Invalid/Missing environment variable: "MONGODB_URI"');
 }
 
 const uri = process.env.MONGODB_URI;
+const dbName = process.env.MONGODB_DB_NAME || "productDB"; // Use env variable or default
 const options = {};
 
 let client: MongoClient;
@@ -30,7 +31,7 @@ export default clientPromise;
 // Helper functions for database operations
 export async function getDb(): Promise<Db> {
   const client = await clientPromise;
-  return client.db();
+  return client.db(dbName); // Use the specified database name
 }
 
 export async function getUsersCollection(): Promise<Collection> {
@@ -45,7 +46,8 @@ export async function getProductsCollection(): Promise<Collection> {
 
 // User types
 export interface User {
-  id: string;
+  _id?: ObjectId; // MongoDB uses _id
+  id?: string; // Optional string id for application use
   email: string;
   name: string;
   passwordHash?: string;
@@ -55,7 +57,8 @@ export interface User {
 
 // Product types
 export interface Product {
-  id: string;
+  _id?: ObjectId;
+  id?: string;
   name: string;
   description: string;
   price: number;
