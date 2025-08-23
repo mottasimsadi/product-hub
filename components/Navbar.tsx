@@ -2,22 +2,25 @@
 
 import { useState, useEffect } from "react";
 import { useSession, signOut } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "next-themes";
 import { Moon, Sun, ShoppingCart, User } from "lucide-react";
+import { toast } from "sonner";
 
 export default function Navbar() {
-  const { data: session } = useSession();
+  const { data: session, update } = useSession();
   const { theme, setTheme, systemTheme } = useTheme();
+  const router = useRouter();
   const [mounted, setMounted] = useState(false);
   const [currentTheme, setCurrentTheme] = useState("light");
+  const [isSigningOut, setIsSigningOut] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  // Update currentTheme whenever theme or systemTheme changes
   useEffect(() => {
     if (theme === "system") {
       setCurrentTheme(systemTheme || "light");
@@ -25,6 +28,38 @@ export default function Navbar() {
       setCurrentTheme(theme || "light");
     }
   }, [theme, systemTheme]);
+
+  const handleSignOut = async () => {
+    setIsSigningOut(true);
+
+    // Show loading toast
+    const toastId = toast.loading("Signing out...");
+
+    try {
+      // First sign out from NextAuth
+      await signOut({ redirect: false });
+
+      // Clear any client-side storage if needed
+      localStorage.removeItem("sessionData");
+      sessionStorage.clear();
+
+      // Force refresh the session data
+      await update();
+
+      // Update toast to success
+      toast.success("Signed out successfully", { id: toastId });
+
+      // Redirect to home page
+      router.push("/");
+      router.refresh(); // Force a refresh of the page
+    } catch (error) {
+      console.error("Error signing out:", error);
+      // Update toast to error
+      toast.error("Failed to sign out", { id: toastId });
+    } finally {
+      setIsSigningOut(false);
+    }
+  };
 
   if (!mounted) {
     return (
@@ -50,10 +85,8 @@ export default function Navbar() {
 
   const toggleTheme = () => {
     if (theme === "system") {
-      // If current theme is system, toggle based on system theme
       setTheme(systemTheme === "dark" ? "light" : "dark");
     } else {
-      // If theme is explicitly set, toggle between light and dark
       setTheme(theme === "dark" ? "light" : "dark");
     }
   };
@@ -105,11 +138,12 @@ export default function Navbar() {
                 </span>
                 <Button
                   variant="outline"
-                  onClick={() => signOut()}
+                  onClick={handleSignOut}
+                  disabled={isSigningOut}
                   className="flex items-center space-x-2"
                 >
                   <User className="h-4 w-4" />
-                  <span>Sign Out</span>
+                  <span>{isSigningOut ? "Signing Out..." : "Sign Out"}</span>
                 </Button>
               </div>
             ) : (
